@@ -1,31 +1,47 @@
 import { useState } from "react";
 import CornerMarks from "./CornerMarks";
 
-const EXPERIMENTS = [
-  {
-    code: "EXPERIMENT 01",
-    title: "THE WORK",
-    status: "ACTIVE",
-    note: "Live build in progress.",
-  },
-  {
-    code: "EXPERIMENT 02",
-    title: "CLASSIFIED",
-    status: "LOCKED",
-    note: "Access restricted.",
-  },
-  {
-    code: "EXPERIMENT 03",
-    title: "COMING SOON",
-    status: "STANDBY",
-    note: "Awaiting activation.",
-  },
-];
-
 const NAV_ITEMS = ["WORKSHOP", "WORKMEN", "EXPERIMENTS"];
 
-export default function Workshop({ workman, onExit }) {
+function getExperiments(progress) {
+  const workDone = Boolean(progress?.workCompleted);
+  const signalDone = Boolean(progress?.signalCompleted);
+
+  return [
+    {
+      code: "EXPERIMENT 01",
+      title: "THE WORK",
+      status: workDone ? "COMPLETED" : "ACTIVE",
+      note: workDone ? "Response received." : "Live build in progress.",
+      clickable: true,
+      onClickKey: "work",
+    },
+    {
+      code: "EXPERIMENT 02",
+      title: signalDone || workDone ? "THE SIGNAL" : "CLASSIFIED",
+      status: signalDone ? "COMPLETED" : workDone ? "UNLOCKED" : "LOCKED",
+      note: signalDone
+        ? "Signal transmitted."
+        : workDone
+        ? "Access granted."
+        : "Access restricted.",
+      clickable: workDone,
+      onClickKey: "signal",
+    },
+    {
+      code: "EXPERIMENT 03",
+      title: "COMING SOON",
+      status: "STANDBY",
+      note: "Awaiting activation.",
+      clickable: false,
+      onClickKey: null,
+    },
+  ];
+}
+
+export default function Workshop({ workman, progress, onExit, onOpenTask }) {
   const [activeNav, setActiveNav] = useState("WORKSHOP");
+  const experiments = getExperiments(progress);
 
   return (
     <div className="screen workshop">
@@ -73,18 +89,43 @@ export default function Workshop({ workman, onExit }) {
         </div>
 
         <div className="experiment-grid">
-          {EXPERIMENTS.map((exp) => (
-            <div className={`experiment-card experiment-card--${exp.status.toLowerCase()}`} key={exp.code}>
-              <div className="experiment-card-top">
-                <span className="label">{exp.code}</span>
-                <span className={`status-tag mono status-tag--${exp.status.toLowerCase()}`}>
-                  {exp.status}
-                </span>
+          {experiments.map((exp) => {
+            const statusClass = exp.status.toLowerCase();
+            const classes = [
+              "experiment-card",
+              `experiment-card--${statusClass}`,
+              exp.clickable ? "experiment-card--clickable" : "",
+            ]
+              .filter(Boolean)
+              .join(" ");
+
+            const cardProps = exp.clickable
+              ? {
+                  role: "button",
+                  tabIndex: 0,
+                  onClick: () => onOpenTask(exp.onClickKey),
+                  onKeyDown: (e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onOpenTask(exp.onClickKey);
+                    }
+                  },
+                }
+              : {};
+
+            return (
+              <div className={classes} key={exp.code} {...cardProps}>
+                <div className="experiment-card-top">
+                  <span className="label">{exp.code}</span>
+                  <span className={`status-tag mono status-tag--${statusClass}`}>
+                    {exp.status === "COMPLETED" ? "COMPLETED ✓" : exp.status}
+                  </span>
+                </div>
+                <h2 className="experiment-title">{exp.title}</h2>
+                <p className="experiment-note mono">{exp.note}</p>
               </div>
-              <h2 className="experiment-title">{exp.title}</h2>
-              <p className="experiment-note mono">{exp.note}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </main>
     </div>

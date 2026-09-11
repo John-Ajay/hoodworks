@@ -419,6 +419,91 @@
   animation: blink 1.6s step-start infinite;
 }
 
+/* ---------- task view (experiments) ---------- */
+
+.task-content {
+  position: relative;
+  z-index: 2;
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 120px 24px 60px;
+  display: flex;
+  flex-direction: column;
+}
+
+.task-headline {
+  font-size: clamp(36px, 8vw, 64px);
+}
+
+.task-form {
+  margin-top: 40px;
+}
+
+.task-textarea-row {
+  padding: 16px 18px;
+  align-items: stretch;
+}
+
+.task-textarea {
+  padding: 8px 0;
+  resize: vertical;
+  min-height: 140px;
+  line-height: 1.6;
+}
+
+.task-textarea::placeholder {
+  color: var(--grey-dim);
+}
+
+/* clickable / interactive experiment cards */
+
+.experiment-card--clickable {
+  cursor: pointer;
+}
+
+.experiment-card--clickable:hover {
+  background: var(--off-black);
+  border-color: var(--grey);
+}
+
+.experiment-card--clickable:focus-visible {
+  outline: 1px solid var(--white);
+  outline-offset: -1px;
+}
+
+.status-tag--completed {
+  color: var(--white);
+  border-color: var(--white);
+}
+
+.status-tag--unlocked {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.experiment-card--completed .experiment-title::after {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--white);
+  margin-left: 10px;
+  vertical-align: middle;
+}
+
+.experiment-card--unlocked .experiment-title::after {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-left: 10px;
+  vertical-align: middle;
+  animation: blink 1.6s step-start infinite;
+}
+
 /* ---------- responsive ---------- */
 
 @media (max-width: 860px) {
@@ -432,7 +517,8 @@
 
 @media (max-width: 640px) {
   .landing-content,
-  .result-content {
+  .result-content,
+  .task-content {
     padding-top: 90px;
     padding-bottom: 44px;
   }
