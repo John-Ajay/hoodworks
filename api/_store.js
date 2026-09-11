@@ -4,10 +4,15 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const LOCAL_DATA_PATH = path.join(__dirname, "..", "data", "workmen.json");
+
 const BLOB_PATHNAME = "workmen.json";
 
 const isProduction = process.env.VERCEL === "1";
-const usingBlob = isProduction || Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+
+const usingBlob =
+  isProduction ||
+  Boolean(process.env.BLOB_STORE_ID) ||
+  Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 
 async function readAllLocal() {
   try {
@@ -19,18 +24,40 @@ async function readAllLocal() {
 }
 
 function writeAllLocal(data) {
-  fs.mkdirSync(path.dirname(LOCAL_DATA_PATH), { recursive: true });
-  fs.writeFileSync(LOCAL_DATA_PATH, JSON.stringify(data, null, 2));
+  fs.mkdirSync(path.dirname(LOCAL_DATA_PATH), {
+    recursive: true,
+  });
+
+  fs.writeFileSync(
+    LOCAL_DATA_PATH,
+    JSON.stringify(data, null, 2)
+  );
 }
 
-async function readAllBlob() {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+async function getBlobSdk() {
+  if (
+    !process.env.BLOB_STORE_ID &&
+    !process.env.BLOB_READ_WRITE_TOKEN
+  ) {
     throw new Error(
-      "Vercel Blob is not configured. Add BLOB_READ_WRITE_TOKEN to the Vercel project."
+      "Vercel Blob is not configured. Connect a Blob store to this Vercel project."
     );
   }
 
-  const { list } = await import("@vercel/blob");
+  /*
+   * @vercel/blob uses Vercel OIDC automatically when:
+   *
+   * BLOB_STORE_ID is available
+   * +
+   * Vercel provides VERCEL_OIDC_TOKEN
+   *
+   * A BLOB_READ_WRITE_TOKEN is still supported as a fallback.
+   */
+  return import("@vercel/blob");
+}
+
+async function readAllBlob() {
+  const { list } = await getBlobSdk();
 
   const { blobs } = await list({
     prefix: BLOB_PATHNAME,
@@ -50,20 +77,16 @@ async function readAllBlob() {
   });
 
   if (!response.ok) {
-    throw new Error("Unable to read Workman storage.");
+    throw new Error(
+      "Unable to read Workman storage."
+    );
   }
 
   return await response.json();
 }
 
 async function writeAllBlob(data) {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    throw new Error(
-      "Vercel Blob is not configured. Add BLOB_READ_WRITE_TOKEN to the Vercel project."
-    );
-  }
-
-  const { put } = await import("@vercel/blob");
+  const { put } = await getBlobSdk();
 
   await put(
     BLOB_PATHNAME,
@@ -94,6 +117,7 @@ async function writeAll(data) {
 
 export async function getWorkmanRecord(handle) {
   const all = await readAll();
+
   return all[handle] || null;
 }
 
@@ -134,6 +158,7 @@ export async function upsertWorkmanRecord(
 
 export async function listAllRecords() {
   const all = await readAll();
+
   return Object.values(all);
 }
 
