@@ -1,0 +1,124 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --black: #0a0a0a;
+  --off-black: #131313;
+  --white: #f4f3f0;
+  --off-white: #e8e6e1;
+  --grey: #6b6b68;
+  --grey-dim: #3a3a38;
+  --grey-line: #2a2a28;
+  --accent: #ff5a1f;
+
+  --font-display: 'Space Grotesk', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  background: var(--black);
+  color: var(--white);
+  width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: var(--font-display);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+input {
+  font-family: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--black);
+}
+
+.mono {
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--grey);
+}
+
+.hairline {
+  border: none;
+  border-top: 1px solid var(--grey-line);
+}
+
+/* faint grid background used across screens */
+.grid-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, rgba(255,255,255,0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.035) 1px, transparent 1px);
+  background-size: 64px 64px;
+  z-index: 0;
+}
+
+.corner-marks span {
+  position: fixed;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--grey-dim);
+  z-index: 1;
+  user-select: none;
+}
+.corner-marks .tl { top: 20px; left: 20px; }
+.corner-marks .tr { top: 20px; right: 20px; }
+.corner-marks .bl { bottom: 20px; left: 20px; }
+.corner-marks .br { bottom: 20px; right: 20px; }
+
+@media (max-width: 640px) {
+  .corner-marks span { font-size: 9px; }
+  .corner-marks .tl, .corner-marks .tr { top: 16px; }
+  .corner-marks .bl, .corner-marks .br { bottom: 16px; }
+  .corner-marks .tl, .corner-marks .bl { left: 16px; }
+  .corner-marks .tr, .corner-marks .br { right: 16px; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
