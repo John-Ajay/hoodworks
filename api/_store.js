@@ -57,32 +57,31 @@ async function getBlobSdk() {
 }
 
 async function readAllBlob() {
-  const { list } = await getBlobSdk();
+  const { get } = await getBlobSdk();
 
-  const { blobs } = await list({
-    prefix: BLOB_PATHNAME,
-    limit: 100,
-  });
+  try {
+    const result = await get(BLOB_PATHNAME, {
+      access: "private",
+      useCache: false,
+    });
 
-  const match = blobs.find(
-    (blob) => blob.pathname === BLOB_PATHNAME
-  );
+    if (!result) {
+      return {};
+    }
 
-  if (!match) {
-    return {};
+    const text = await new Response(result.stream).text();
+
+    return JSON.parse(text);
+  } catch (error) {
+    if (
+      error?.status === 404 ||
+      error?.code === "BLOB_NOT_FOUND"
+    ) {
+      return {};
+    }
+
+    throw error;
   }
-
-  const response = await fetch(match.url, {
-    cache: "no-store",
-  });
-
-  if (!response.ok) {
-    throw new Error(
-      "Unable to read Workman storage."
-    );
-  }
-
-  return await response.json();
 }
 
 async function writeAllBlob(data) {
@@ -92,7 +91,7 @@ async function writeAllBlob(data) {
     BLOB_PATHNAME,
     JSON.stringify(data, null, 2),
     {
-      access: "public",
+      access: "private",
       contentType: "application/json",
       allowOverwrite: true,
     }
